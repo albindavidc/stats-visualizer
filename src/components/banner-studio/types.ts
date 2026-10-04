@@ -22,7 +22,16 @@ export interface PortraitSettings {
   fillColor: string; // default #A78BFA
 }
 
-export type ThemePreset = 'cyber-cyan' | 'matrix-green' | 'sunset' | 'mono' | 'custom';
+export type ThemePreset = 'cyber-cyan' | 'matrix-green' | 'sunset' | 'mono' | 'github-dark' | 'custom';
+
+export type BannerFont =
+  | 'monospace'
+  | 'jetbrains'
+  | 'fira-code'
+  | 'inter'
+  | 'source-code'
+  | 'space-mono'
+  | 'roboto';
 
 export interface ThemeColors {
   bg: string;
@@ -53,6 +62,7 @@ export interface BannerShellSettings {
   footerCommand: string;
   theme: ThemePreset;
   colors: ThemeColors;
+  font: BannerFont;
   animatePortrait: boolean;
   animateRows: boolean;
   animateBorder: boolean;

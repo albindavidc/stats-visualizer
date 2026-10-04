@@ -1,6 +1,18 @@
 import { ThemeColors, ThemePreset } from './types';
 
 export const THEME_PRESETS: Record<Exclude<ThemePreset, 'custom'>, ThemeColors> = {
+  'github-dark': {
+    bg: '#0D1117',
+    cardBg: '#161B22',
+    accent: '#58A6FF',
+    secondaryAccent: '#3FB950',
+    text: '#C9D1D9',
+    leaderColor: '#30363D',
+    valueColor: '#F0F6FC',
+    borderColor1: '#238636',
+    borderColor2: '#1F6FEB',
+    borderColor3: '#8957E5',
+  },
   'cyber-cyan': {
     bg: '#070B14',
     cardBg: '#0D1527',

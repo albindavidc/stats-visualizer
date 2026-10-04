@@ -1,4 +1,8 @@
 export const THEMES: Record<string, { bg: string, levels: string[] }> = {
+  'github-dark': {
+    bg: '#0d1117',
+    levels: ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353'],
+  },
   github: {
     bg: '#0d1117',
     levels: ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353'],

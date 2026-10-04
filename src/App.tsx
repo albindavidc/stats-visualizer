@@ -333,7 +333,7 @@ export default function App() {
                   onChange={(e) => setTheme(e.target.value)}
                 >
                   {Object.keys(THEMES).map((t) => (
-                    <option key={t} value={t}>{t}</option>
+                    <option key={t} value={t}>{t === 'github-dark' ? 'GitHub Dark' : t}</option>
                   ))}
                 </select>
               </div>

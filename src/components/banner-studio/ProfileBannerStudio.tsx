@@ -73,6 +73,7 @@ export const ProfileBannerStudio: React.FC<ProfileBannerStudioProps> = ({ onBack
     footerCommand: '> More about me & projects below in README ↓',
     theme: 'cyber-cyan',
     colors: { ...THEME_PRESETS['cyber-cyan'] },
+    font: 'monospace',
     animatePortrait: true,
     animateRows: true,
     animateBorder: true

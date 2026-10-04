@@ -1,7 +1,7 @@
 import React from 'react';
-import { BannerShellSettings, InfoRow, ThemePreset } from './types';
+import { BannerFont, BannerShellSettings, InfoRow, ThemePreset } from './types';
 import { THEME_PRESETS } from './themePresets';
-import { Palette, Plus, Trash2, ArrowUp, ArrowDown, Activity, PlayCircle, Terminal, Split } from 'lucide-react';
+import { Palette, Plus, Trash2, ArrowUp, ArrowDown, Activity, PlayCircle, Terminal, Split, Type, Sparkles } from 'lucide-react';
 
 interface BannerShellControlsProps {
   settings: BannerShellSettings;
@@ -9,6 +9,16 @@ interface BannerShellControlsProps {
   infoRows: InfoRow[];
   onChangeInfoRows: (rows: InfoRow[]) => void;
 }
+
+const FONT_OPTIONS: { id: BannerFont; name: string; category: string; previewFont: string; sample: string }[] = [
+  { id: 'monospace', name: 'SF / Consolas', category: 'Monospace', previewFont: 'ui-monospace, monospace', sample: '>_ profile.sh --live' },
+  { id: 'jetbrains', name: 'JetBrains Mono', category: 'Code Mono', previewFont: '"JetBrains Mono", monospace', sample: 'const stack = ["AI"]' },
+  { id: 'fira-code', name: 'Fira Code', category: 'Ligature Mono', previewFont: '"Fira Code", monospace', sample: 'fn => result === true' },
+  { id: 'source-code', name: 'Source Code Pro', category: 'Adobe Mono', previewFont: '"Source Code Pro", monospace', sample: 'export default Dev' },
+  { id: 'space-mono', name: 'Space Mono', category: 'Retro Tech', previewFont: '"Space Mono", monospace', sample: 'SYSTEM.READY [OK]' },
+  { id: 'inter', name: 'Inter Display', category: 'Clean Sans', previewFont: '"Inter", sans-serif', sample: 'Full-Stack Software' },
+  { id: 'roboto', name: 'Roboto', category: 'Modern Sans', previewFont: '"Roboto", sans-serif', sample: 'High Performance UI' },
+];
 
 export const BannerShellControls: React.FC<BannerShellControlsProps> = ({
   settings,
@@ -71,37 +81,101 @@ export const BannerShellControls: React.FC<BannerShellControlsProps> = ({
     <div className="space-y-6 text-sm text-gray-300">
       {/* Theme Presets */}
       <div className="space-y-3">
-        <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
-          <Palette size={14} />
-          Theme Preset
-        </label>
+        <div className="flex items-center justify-between">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
+            <Palette size={14} className="text-cyan-400" />
+            Theme Preset
+          </label>
+          <span className="text-[11px] font-mono text-cyan-400 uppercase tracking-wider font-semibold">
+            {settings.theme}
+          </span>
+        </div>
         <div className="grid grid-cols-2 gap-2.5">
           {[
-            { id: 'cyber-cyan', name: 'Cyber Cyan', accent: '#00F0FF', bg: '#0D1527' },
-            { id: 'matrix-green', name: 'Matrix Green', accent: '#00FF66', bg: '#071A0D' },
-            { id: 'sunset', name: 'Sunset', accent: '#FF5E62', bg: '#210F25' },
-            { id: 'mono', name: 'Mono', accent: '#F8FAFC', bg: '#141414' },
+            { id: 'github-dark', name: 'GitHub Dark', accent: '#58A6FF', bg: '#0D1117', cardBg: '#161B22', isNew: true },
+            { id: 'cyber-cyan', name: 'Cyber Cyan', accent: '#00F0FF', bg: '#0D1527', cardBg: '#070B14' },
+            { id: 'matrix-green', name: 'Matrix Green', accent: '#00FF66', bg: '#071A0D', cardBg: '#030D06' },
+            { id: 'sunset', name: 'Sunset', accent: '#FF5E62', bg: '#210F25', cardBg: '#140816' },
+            { id: 'mono', name: 'Mono', accent: '#F8FAFC', bg: '#141414', cardBg: '#0A0A0A' },
           ].map((preset) => (
             <button
               key={preset.id}
               type="button"
               onClick={() => handleSelectPreset(preset.id as ThemePreset)}
-              className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between ${
+              className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between relative overflow-hidden group ${
                 settings.theme === preset.id
-                  ? 'border-cyan-400 bg-gray-800 shadow-md ring-1 ring-cyan-400/50'
+                  ? 'border-cyan-400 bg-gray-800 shadow-lg shadow-cyan-950/40 ring-1 ring-cyan-400/50'
                   : 'border-gray-800 bg-gray-900/60 hover:bg-gray-800/80 hover:border-gray-700'
               }`}
             >
               <div>
-                <div className="font-semibold text-xs text-white">{preset.name}</div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-semibold text-xs text-white">{preset.name}</span>
+                  {preset.isNew && (
+                    <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-cyan-950 text-cyan-400 border border-cyan-800">
+                      OFFICIAL
+                    </span>
+                  )}
+                </div>
                 <div className="text-[11px] text-gray-400 font-mono mt-0.5">{preset.accent}</div>
               </div>
               <div className="flex gap-1.5 items-center">
-                <span className="w-4 h-4 rounded-full border border-gray-700" style={{ backgroundColor: preset.bg }} />
-                <span className="w-4 h-4 rounded-full" style={{ backgroundColor: preset.accent }} />
+                <span
+                  className="w-4 h-4 rounded-full border border-gray-700 shadow-inner"
+                  style={{ backgroundColor: preset.bg }}
+                  title="Background"
+                />
+                <span
+                  className="w-4 h-4 rounded-full shadow-sm"
+                  style={{ backgroundColor: preset.accent }}
+                  title="Accent Color"
+                />
               </div>
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Font Family Selection */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
+            <Type size={14} className="text-violet-400" />
+            Design Font Family
+          </label>
+          <span className="text-[11px] font-mono text-violet-400 uppercase tracking-wider font-semibold">
+            {settings.font || 'monospace'}
+          </span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {FONT_OPTIONS.map((f) => {
+            const isSelected = (settings.font || 'monospace') === f.id;
+            return (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => onChangeSettings({ font: f.id })}
+                className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between ${
+                  isSelected
+                    ? 'border-violet-400 bg-violet-950/20 shadow-md ring-1 ring-violet-400/50'
+                    : 'border-gray-800 bg-gray-900/60 hover:bg-gray-800/80 hover:border-gray-700'
+                }`}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <span className="font-semibold text-xs text-white">{f.name}</span>
+                  <span className="text-[10px] font-mono text-gray-400 px-1.5 py-0.5 rounded bg-gray-800">
+                    {f.category}
+                  </span>
+                </div>
+                <div
+                  className="text-xs text-cyan-300/90 mt-1.5 font-medium truncate"
+                  style={{ fontFamily: f.previewFont }}
+                >
+                  {f.sample}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
 

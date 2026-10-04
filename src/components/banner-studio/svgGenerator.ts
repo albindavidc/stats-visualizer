@@ -1,5 +1,15 @@
 import { BannerShellSettings, DitherResult, InfoRow, PortraitSettings } from './types';
 
+const BANNER_FONTS: Record<string, string> = {
+  monospace: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+  jetbrains: '"JetBrains Mono", "Fira Code", ui-monospace, Menlo, Monaco, Consolas, monospace',
+  'fira-code': '"Fira Code", "JetBrains Mono", ui-monospace, Consolas, monospace',
+  inter: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+  'source-code': '"Source Code Pro", ui-monospace, monospace',
+  'space-mono': '"Space Mono", monospace',
+  roboto: '"Roboto", -apple-system, sans-serif',
+};
+
 export function generateBannerSvg(
   portraitSettings: PortraitSettings,
   ditherResult: DitherResult,
@@ -7,6 +17,8 @@ export function generateBannerSvg(
   infoRows: InfoRow[]
 ): string {
   const { colors } = shellSettings;
+  const selectedFont = shellSettings.font || 'monospace';
+  const fontFamily = BANNER_FONTS[selectedFont] || BANNER_FONTS.monospace;
 
   // Frame coordinates
   const frameX = 45;
@@ -140,7 +152,7 @@ export function generateBannerSvg(
       return `
       <g opacity="${initialOpacity}" ${initialTransform}>
         ${dividerAnim}
-        <text x="${rightColumnX}" y="${rowY}" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="${dividerFontSize}" font-weight="700" fill="${colors.secondaryAccent}" letter-spacing="1.5">
+        <text x="${rightColumnX}" y="${rowY}" font-family="${fontFamily}" font-size="${dividerFontSize}" font-weight="700" fill="${colors.secondaryAccent}" letter-spacing="1.5">
           ${escapeXml(row.label.toUpperCase())}
         </text>
         <line x1="${rightColumnX + Math.max(80, row.label.length * 8.5)}" y1="${rowY - 4}" x2="${rightColumnX + rightColumnWidth}" y2="${rowY - 4}" stroke="${colors.leaderColor}" stroke-width="1" stroke-dasharray="4 4" opacity="0.6"/>
@@ -169,7 +181,7 @@ export function generateBannerSvg(
     return `
       <g opacity="${initialOpacity}" ${initialTransform}>
         ${rowAnim}
-        <text x="${rightColumnX}" y="${rowY}" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="${fontSize}" textLength="${rightColumnWidth}" lengthAdjust="spacingAndGlyphs">
+        <text x="${rightColumnX}" y="${rowY}" font-family="${fontFamily}" font-size="${fontSize}" textLength="${rightColumnWidth}" lengthAdjust="spacingAndGlyphs">
           <tspan fill="${colors.accent}">${escapeXml(row.label)}</tspan>
           <tspan fill="${colors.leaderColor}">${dottedLeader}</tspan>
           <tspan fill="${colors.valueColor}" font-weight="bold">${escapeXml(row.value)}</tspan>
@@ -184,7 +196,7 @@ export function generateBannerSvg(
         <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" repeatCount="indefinite" />
         <animate attributeName="r" values="4.5;5.5;4.5" dur="1.8s" repeatCount="indefinite" />
       </circle>
-      <text x="0" y="4" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="11" font-weight="bold" fill="#EF4444" letter-spacing="1">LIVE</text>
+      <text x="0" y="4" text-anchor="end" font-family="${fontFamily}" font-size="11" font-weight="bold" fill="#EF4444" letter-spacing="1">LIVE</text>
     </g>` : '';
 
   // Corner bracket paths for left portrait frame
@@ -250,8 +262,10 @@ export function generateBannerSvg(
   </defs>
 
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&amp;family=Inter:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@400;600;700;800&amp;family=Roboto:wght@400;500;700&amp;family=Space+Mono:wght@400;700&amp;family=Source+Code+Pro:wght@400;600;700;800&amp;display=swap');
+
     text {
-      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-family: ${fontFamily};
       -webkit-font-smoothing: antialiased;
     }
   </style>
