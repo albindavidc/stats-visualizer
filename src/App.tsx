@@ -2,10 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { SpaceShooter } from './components/SpaceShooter';
 import { ContributionGraph } from './components/ContributionGraph';
 import { LeetCodeGraph } from './components/LeetCodeGraph';
-import { Github, Code2, Play, Loader2, LayoutGrid, Gamepad2, Check, Code, Link } from 'lucide-react';
+import { ProfileBannerStudio } from './components/banner-studio/ProfileBannerStudio';
+import { Github, Code2, Play, Loader2, LayoutGrid, Gamepad2, Check, Code, Link, Sparkles, Terminal } from 'lucide-react';
 import { THEMES } from './themes';
 
 export default function App() {
+  const [currentPage, setCurrentPage] = useState<'stats' | 'banner-studio'>('stats');
   const [platform, setPlatform] = useState<'github' | 'leetcode'>('github');
   const [username, setUsername] = useState('');
   const [strategy, setStrategy] = useState('random');
@@ -27,6 +29,10 @@ export default function App() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const pageParam = params.get('page') || params.get('tab');
+    if (pageParam === 'banner-studio' || pageParam === 'banner') {
+      setCurrentPage('banner-studio');
+    }
     const plat = params.get('platform') as 'github' | 'leetcode';
     if (plat === 'github' || plat === 'leetcode') setPlatform(plat);
     const user = params.get('username') || (plat === 'leetcode' ? 'albindavidc' : 'albindavidc');
@@ -46,6 +52,17 @@ export default function App() {
     const urlSite = params.get('site');
     if (urlSite) setLeetcodeSite(urlSite);
   }, []);
+
+  const handlePageChange = (page: 'stats' | 'banner-studio') => {
+    setCurrentPage(page);
+    const url = new URL(window.location.href);
+    if (page === 'banner-studio') {
+      url.searchParams.set('page', 'banner-studio');
+    } else {
+      url.searchParams.delete('page');
+    }
+    window.history.pushState({}, '', url.toString());
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,9 +176,64 @@ export default function App() {
     }
   };
 
+  if (currentPage === 'banner-studio') {
+    return <ProfileBannerStudio onBackToStats={() => handlePageChange('stats')} />;
+  }
+
   return (
-    <div className="min-h-screen flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col items-center py-6 px-4 sm:px-6 lg:px-8">
+      {/* Top Application Switcher Bar */}
+      <div className="max-w-4xl w-full flex items-center justify-between mb-8 pb-4 border-b border-gray-800">
+        <div className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="font-semibold text-sm text-gray-200">Developer Profile Suite</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => handlePageChange('stats')}
+            className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-gray-800 text-white border border-gray-700"
+          >
+            Stats & Shooter
+          </button>
+          <button
+            onClick={() => handlePageChange('banner-studio')}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-cyan-600 to-violet-600 hover:from-cyan-500 hover:to-violet-500 text-white shadow-md shadow-cyan-600/20 transition-all hover:scale-105"
+          >
+            <Sparkles size={13} />
+            <span>Profile Banner Studio</span>
+            <span className="px-1.5 py-0.2 rounded text-[10px] bg-white/20 font-bold">NEW</span>
+          </button>
+        </div>
+      </div>
+
       <div className="max-w-4xl w-full space-y-8">
+        {/* Banner Studio Callout Banner */}
+        <div className="p-4 rounded-xl bg-gradient-to-r from-cyan-950/40 via-violet-950/30 to-gray-900 border border-cyan-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shrink-0">
+              <Terminal size={20} />
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-white flex items-center gap-2">
+                <span>Create an animated README profile banner</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-cyan-950 text-cyan-400 border border-cyan-800">
+                  Pixel-Art + SMIL
+                </span>
+              </div>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Generate a terminal-style card with dithered portrait, live info rows, and ready-to-commit bundle in Profile Banner Studio.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => handlePageChange('banner-studio')}
+            className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-xs font-semibold text-white shadow-md shadow-cyan-600/20 transition-all"
+          >
+            <span>Open Banner Studio</span>
+            <span>→</span>
+          </button>
+        </div>
+
         <div className="text-center">
           <div className="flex justify-center items-center gap-3 text-emerald-400 mb-4">
             {platform === 'github' ? <Github size={48} /> : (

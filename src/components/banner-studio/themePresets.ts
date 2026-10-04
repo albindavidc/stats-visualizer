@@ -1,0 +1,52 @@
+import { ThemeColors, ThemePreset } from './types';
+
+export const THEME_PRESETS: Record<Exclude<ThemePreset, 'custom'>, ThemeColors> = {
+  'cyber-cyan': {
+    bg: '#070B14',
+    cardBg: '#0D1527',
+    accent: '#00F0FF',
+    secondaryAccent: '#818CF8',
+    text: '#E2E8F0',
+    leaderColor: '#334155',
+    valueColor: '#FFFFFF',
+    borderColor1: '#8B5CF6',
+    borderColor2: '#06B6D4',
+    borderColor3: '#10B981',
+  },
+  'matrix-green': {
+    bg: '#030D06',
+    cardBg: '#071A0D',
+    accent: '#00FF66',
+    secondaryAccent: '#34D399',
+    text: '#D1FAE5',
+    leaderColor: '#064E3B',
+    valueColor: '#F0FDF4',
+    borderColor1: '#059669',
+    borderColor2: '#10B981',
+    borderColor3: '#00FF66',
+  },
+  'sunset': {
+    bg: '#140816',
+    cardBg: '#210F25',
+    accent: '#FF5E62',
+    secondaryAccent: '#FF9966',
+    text: '#FFE4E6',
+    leaderColor: '#581C87',
+    valueColor: '#FFF1F2',
+    borderColor1: '#F43F5E',
+    borderColor2: '#FB923C',
+    borderColor3: '#EC4899',
+  },
+  'mono': {
+    bg: '#0A0A0A',
+    cardBg: '#141414',
+    accent: '#F8FAFC',
+    secondaryAccent: '#94A3B8',
+    text: '#F1F5F9',
+    leaderColor: '#475569',
+    valueColor: '#FFFFFF',
+    borderColor1: '#64748B',
+    borderColor2: '#94A3B8',
+    borderColor3: '#CBD5E1',
+  }
+};
