@@ -1,13 +1,13 @@
 import { BannerShellSettings, DitherResult, InfoRow, PortraitSettings } from './types';
 
 const BANNER_FONTS: Record<string, string> = {
-  monospace: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-  jetbrains: '"JetBrains Mono", "Fira Code", ui-monospace, Menlo, Monaco, Consolas, monospace',
-  'fira-code': '"Fira Code", "JetBrains Mono", ui-monospace, Consolas, monospace',
-  inter: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  'source-code': '"Source Code Pro", ui-monospace, monospace',
-  'space-mono': '"Space Mono", monospace',
-  roboto: '"Roboto", -apple-system, sans-serif',
+  monospace: "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+  jetbrains: "'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Monaco, Consolas, monospace",
+  'fira-code': "'Fira Code', 'JetBrains Mono', ui-monospace, Consolas, monospace",
+  inter: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  'source-code': "'Source Code Pro', ui-monospace, monospace",
+  'space-mono': "'Space Mono', monospace",
+  roboto: "'Roboto', -apple-system, sans-serif",
 };
 
 export function generateBannerSvg(
@@ -19,6 +19,9 @@ export function generateBannerSvg(
   const { colors } = shellSettings;
   const selectedFont = shellSettings.font || 'monospace';
   const fontFamily = BANNER_FONTS[selectedFont] || BANNER_FONTS.monospace;
+  const fontAttr = fontFamily.replace(/['"]/g, '');
+  const labelWeight = shellSettings.labelFontWeight || '500';
+  const valueWeight = shellSettings.valueFontWeight || '700';
 
   // Frame coordinates
   const frameX = 45;
@@ -126,9 +129,16 @@ export function generateBannerSvg(
   const totalRows = infoRows.length;
   const availHeight = 346;
   const stepY = totalRows > 0 ? Math.min(36, Math.max(19, Math.floor(availHeight / totalRows))) : 34;
-  const fontSize = totalRows > 13 ? (totalRows > 16 ? 11 : 12) : 13.5;
-  const dividerFontSize = totalRows > 13 ? 10.5 : 12;
-  const targetChars = totalRows > 13 ? 82 : 75;
+
+  const defaultFontSize = totalRows > 13 ? (totalRows > 16 ? 11 : 12) : 13.5;
+  const labelFontSize = Number(shellSettings.labelFontSize) || defaultFontSize;
+  const valueFontSize = Number(shellSettings.valueFontSize) || defaultFontSize;
+  const avgFontSize = (labelFontSize + valueFontSize) / 2;
+  const dividerFontSize = Math.max(9.5, Math.min(13, labelFontSize - 1.5));
+
+  const isProportional = selectedFont === 'inter' || selectedFont === 'roboto';
+  const charWidthEst = isProportional ? (avgFontSize * 0.58) : (avgFontSize * 0.62);
+  const targetChars = Math.max(20, Math.floor(rightColumnWidth / Math.max(1, charWidthEst)));
   let currentY = 188 + Math.max(0, Math.floor((availHeight - totalRows * stepY) / 4));
 
   const infoRowsSvg = infoRows.map((row, index) => {
@@ -152,7 +162,7 @@ export function generateBannerSvg(
       return `
       <g opacity="${initialOpacity}" ${initialTransform}>
         ${dividerAnim}
-        <text x="${rightColumnX}" y="${rowY}" font-family="${fontFamily}" font-size="${dividerFontSize}" font-weight="700" fill="${colors.secondaryAccent}" letter-spacing="1.5">
+        <text x="${rightColumnX}" y="${rowY}" font-family="${fontAttr}" font-size="${dividerFontSize}" font-weight="700" fill="${colors.secondaryAccent}" letter-spacing="1.5">
           ${escapeXml(row.label.toUpperCase())}
         </text>
         <line x1="${rightColumnX + Math.max(80, row.label.length * 8.5)}" y1="${rowY - 4}" x2="${rightColumnX + rightColumnWidth}" y2="${rowY - 4}" stroke="${colors.leaderColor}" stroke-width="1" stroke-dasharray="4 4" opacity="0.6"/>
@@ -181,10 +191,10 @@ export function generateBannerSvg(
     return `
       <g opacity="${initialOpacity}" ${initialTransform}>
         ${rowAnim}
-        <text x="${rightColumnX}" y="${rowY}" font-family="${fontFamily}" font-size="${fontSize}" textLength="${rightColumnWidth}" lengthAdjust="spacingAndGlyphs">
-          <tspan fill="${colors.accent}">${escapeXml(row.label)}</tspan>
-          <tspan fill="${colors.leaderColor}">${dottedLeader}</tspan>
-          <tspan fill="${colors.valueColor}" font-weight="bold">${escapeXml(row.value)}</tspan>
+        <text x="${rightColumnX}" y="${rowY}" font-family="${fontAttr}" font-size="${avgFontSize}" textLength="${rightColumnWidth}" lengthAdjust="spacing">
+          <tspan fill="${colors.accent}" font-size="${labelFontSize}" font-weight="${labelWeight}">${escapeXml(row.label)}</tspan>
+          <tspan fill="${colors.leaderColor}" font-size="${Math.min(labelFontSize, valueFontSize)}" font-weight="400">${dottedLeader}</tspan>
+          <tspan fill="${colors.valueColor}" font-size="${valueFontSize}" font-weight="${valueWeight}">${escapeXml(row.value)}</tspan>
         </text>
       </g>`;
   }).join('');
@@ -196,7 +206,7 @@ export function generateBannerSvg(
         <animate attributeName="opacity" values="1;0.2;1" dur="1.8s" repeatCount="indefinite" />
         <animate attributeName="r" values="4.5;5.5;4.5" dur="1.8s" repeatCount="indefinite" />
       </circle>
-      <text x="0" y="4" text-anchor="end" font-family="${fontFamily}" font-size="11" font-weight="bold" fill="#EF4444" letter-spacing="1">LIVE</text>
+      <text x="0" y="4" text-anchor="end" font-family="${fontAttr}" font-size="11" font-weight="bold" fill="#EF4444" letter-spacing="1">LIVE</text>
     </g>` : '';
 
   // Corner bracket paths for left portrait frame
@@ -238,6 +248,17 @@ export function generateBannerSvg(
   const footerText = shellSettings.footerCommand || `> More about me & projects below in README ↓`;
   const cursorX = rightColumnX + Math.min(630, footerText.length * 8.2 + 8);
 
+  // Highlighted Gmail / User Pill with Dynamic Width
+  // Resolves email from shellSettings or contact.gmail row in infoRows
+  const gmailRow = infoRows.find(
+    (r) => r.label.toLowerCase().includes('gmail') || r.label.toLowerCase().includes('email')
+  );
+  const emailText = (shellSettings.email?.trim()) || (gmailRow?.value?.trim()) || 'developer@github.com';
+  const emailCharWidth = isProportional ? 6.95 : 7.25;
+  const emailTextWidth = Math.ceil(emailText.length * emailCharWidth);
+  // Left padding & icon: 34px, text width: emailTextWidth, right padding with pulsing dot: 20px
+  const gmailBadgeWidth = Math.min(rightColumnWidth, Math.max(90, 34 + emailTextWidth + 20));
+
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1180" height="610" viewBox="0 0 1180 610">
   <defs>
@@ -261,14 +282,14 @@ export function generateBannerSvg(
     ${borderGradientDef}
   </defs>
 
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600;700&amp;family=Inter:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@400;600;700;800&amp;family=Roboto:wght@400;500;700&amp;family=Space+Mono:wght@400;700&amp;family=Source+Code+Pro:wght@400;600;700;800&amp;display=swap');
+  <style><![CDATA[
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=JetBrains+Mono:wght@100;200;300;400;500;600;700;800&family=Roboto:wght@100;300;400;500;700;900&family=Source+Code+Pro:wght@200;300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap');
 
-    text {
+    text, tspan {
       font-family: ${fontFamily};
       -webkit-font-smoothing: antialiased;
     }
-  </style>
+  ]]></style>
 
   <!-- Window Container with Rounded Rect -->
   <rect x="2" y="2" width="1176" height="606" rx="16" fill="${colors.cardBg}" />
@@ -287,7 +308,7 @@ export function generateBannerSvg(
   <circle cx="68" cy="24" r="5.5" fill="#27C93F" />
 
   <!-- Centered Title -->
-  <text x="590" y="28" font-size="12" fill="#94A3B8" font-weight="600" text-anchor="middle" letter-spacing="0.5">
+  <text x="590" y="28" font-family="${fontAttr}" font-size="12" fill="#94A3B8" font-weight="600" text-anchor="middle" letter-spacing="0.5">
     ${escapeXml(windowTitle)}
   </text>
 
@@ -309,7 +330,7 @@ export function generateBannerSvg(
   </g>
 
   <!-- Right: SYSTEM.INFO Header -->
-  <text x="${rightColumnX}" y="108" font-size="16" font-weight="800" fill="${colors.accent}" letter-spacing="2.5">
+  <text x="${rightColumnX}" y="108" font-family="${fontAttr}" font-size="16" font-weight="800" fill="${colors.accent}" letter-spacing="2.5">
     ${escapeXml(shellSettings.headerText || 'SYSTEM.INFO')}
   </text>
   ${liveBadgeSvg}
@@ -317,13 +338,27 @@ export function generateBannerSvg(
   <!-- Header Divider Line -->
   <line x1="${rightColumnX}" y1="120" x2="${rightColumnX + rightColumnWidth}" y2="120" stroke="${colors.accent}" stroke-width="1.5" stroke-opacity="0.4" />
 
-  <!-- Highlighted Email / User Pill -->
+  <!-- Highlighted Gmail / User Pill (Dynamic Width) -->
   <g transform="translate(${rightColumnX}, 136)">
-    <rect x="0" y="0" width="${Math.max(180, (shellSettings.email?.length || 10) * 8.8 + 50)}" height="28" rx="14" fill="${colors.bg}" stroke="${colors.accent}" stroke-width="1" stroke-opacity="0.5"/>
-    <circle cx="16" cy="14" r="5" fill="${colors.accent}" />
-    <text x="32" y="18.5" font-size="12" font-weight="600" fill="${colors.text}">
-      ${escapeXml(shellSettings.email || 'developer@github.com')}
+    <!-- Dynamic width background pill -->
+    <rect x="0" y="0" width="${gmailBadgeWidth}" height="28" rx="14" fill="${colors.bg}" stroke="${colors.accent}" stroke-width="1.2" stroke-opacity="0.6"/>
+    <rect x="1" y="1" width="${Math.max(0, gmailBadgeWidth - 2)}" height="26" rx="13" fill="${colors.cardBg}" opacity="0.4"/>
+    <!-- Google Red Gmail Mail Envelope Icon -->
+    <g transform="translate(11, 7.5)">
+      <rect x="0" y="0" width="15" height="12" rx="2" fill="none" stroke="#EA4335" stroke-width="1.3" />
+      <path d="M 0 1.5 L 7.5 7 L 15 1.5" fill="none" stroke="#EA4335" stroke-width="1.3" stroke-linejoin="round" />
+      <path d="M 0 10.5 L 5 6" fill="none" stroke="#EA4335" stroke-width="1" opacity="0.65"/>
+      <path d="M 15 10.5 L 10 6" fill="none" stroke="#EA4335" stroke-width="1" opacity="0.65"/>
+    </g>
+    <!-- Dynamic email text with selected font and proportional sizing -->
+    <text x="34" y="18" font-family="${fontAttr}" font-size="11.5" font-weight="600" fill="${colors.text}">
+      ${escapeXml(emailText)}
     </text>
+    <!-- Live status pulsing dot dynamically anchored to the right side of the pill -->
+    <circle cx="${gmailBadgeWidth - 14}" cy="14" r="3.5" fill="${colors.accent}">
+      <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5;4.2;3.5" dur="2s" repeatCount="indefinite" />
+    </circle>
   </g>
 
   <!-- Right: Info Rows -->
@@ -332,7 +367,7 @@ export function generateBannerSvg(
   <!-- Footer Line with Terminal Status and Blinking Cursor -->
   <g transform="translate(0, 0)">
     <line x1="${rightColumnX}" y1="535" x2="${rightColumnX + rightColumnWidth}" y2="535" stroke="${colors.leaderColor}" stroke-width="1" stroke-opacity="0.3" />
-    <text x="${rightColumnX}" y="562" font-size="12.5" fill="${colors.leaderColor}" font-weight="500">
+    <text x="${rightColumnX}" y="562" font-family="${fontAttr}" font-size="12.5" fill="${colors.leaderColor}" font-weight="500">
       ${escapeXml(footerText)}
     </text>
     <rect x="${cursorX.toFixed(1)}" y="550" width="8.5" height="14" fill="${colors.accent}">

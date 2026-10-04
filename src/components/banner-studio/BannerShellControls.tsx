@@ -1,7 +1,7 @@
 import React from 'react';
-import { BannerFont, BannerShellSettings, InfoRow, ThemePreset } from './types';
+import { BannerFont, BannerShellSettings, FontWeightOption, InfoRow, ThemePreset } from './types';
 import { THEME_PRESETS } from './themePresets';
-import { Palette, Plus, Trash2, ArrowUp, ArrowDown, Activity, PlayCircle, Terminal, Split, Type, Sparkles } from 'lucide-react';
+import { Palette, Plus, Trash2, ArrowUp, ArrowDown, Activity, PlayCircle, Terminal, Split, Type, Sparkles, SlidersHorizontal, Maximize2, Mail, Minus, Link2 } from 'lucide-react';
 
 interface BannerShellControlsProps {
   settings: BannerShellSettings;
@@ -9,6 +9,17 @@ interface BannerShellControlsProps {
   infoRows: InfoRow[];
   onChangeInfoRows: (rows: InfoRow[]) => void;
 }
+
+const FONT_WEIGHT_OPTIONS: { id: FontWeightOption; label: string; name: string }[] = [
+  { id: '100', label: '100', name: 'Thin' },
+  { id: '200', label: '200', name: 'Extra Light' },
+  { id: '300', label: '300', name: 'Light' },
+  { id: '400', label: '400', name: 'Normal' },
+  { id: '500', label: '500', name: 'Medium' },
+  { id: '600', label: '600', name: 'Semi Bold' },
+  { id: '700', label: '700', name: 'Bold' },
+  { id: '800', label: '800', name: 'Extra Bold' },
+];
 
 const FONT_OPTIONS: { id: BannerFont; name: string; category: string; previewFont: string; sample: string }[] = [
   { id: 'monospace', name: 'SF / Consolas', category: 'Monospace', previewFont: 'ui-monospace, monospace', sample: '>_ profile.sh --live' },
@@ -26,6 +37,8 @@ export const BannerShellControls: React.FC<BannerShellControlsProps> = ({
   infoRows,
   onChangeInfoRows
 }) => {
+  const [linkSizes, setLinkSizes] = React.useState(false);
+
   const handleSelectPreset = (preset: ThemePreset) => {
     if (preset === 'custom') {
       onChangeSettings({ theme: 'custom' });
@@ -58,9 +71,53 @@ export const BannerShellControls: React.FC<BannerShellControlsProps> = ({
   };
 
   const handleUpdateRow = (id: string, updates: Partial<InfoRow>) => {
-    onChangeInfoRows(
-      infoRows.map((r) => (r.id === id ? { ...r, ...updates } : r))
+    const updated = infoRows.map((r) => (r.id === id ? { ...r, ...updates } : r));
+    onChangeInfoRows(updated);
+
+    // Keep settings.email in sync if the edited row is the Gmail / contact row
+    const targetRow = infoRows.find((r) => r.id === id);
+    if (
+      targetRow &&
+      updates.value !== undefined &&
+      (targetRow.label.toLowerCase().includes('gmail') || targetRow.label.toLowerCase().includes('email'))
+    ) {
+      onChangeSettings({ email: updates.value });
+    }
+  };
+
+  const handleEmailChange = (newEmail: string) => {
+    onChangeSettings({ email: newEmail });
+    // Also sync to contact.gmail row in infoRows if present
+    const hasMatchingRow = infoRows.some(
+      (r) => r.label.toLowerCase().includes('gmail') || r.label.toLowerCase().includes('email')
     );
+    if (hasMatchingRow) {
+      onChangeInfoRows(
+        infoRows.map((r) =>
+          r.label.toLowerCase().includes('gmail') || r.label.toLowerCase().includes('email')
+            ? { ...r, value: newEmail }
+            : r
+        )
+      );
+    }
+  };
+
+  const handleLabelSizeChange = (val: number) => {
+    const clamped = Math.max(9, Math.min(20, Math.round(val * 2) / 2));
+    if (linkSizes) {
+      onChangeSettings({ labelFontSize: clamped, valueFontSize: clamped });
+    } else {
+      onChangeSettings({ labelFontSize: clamped });
+    }
+  };
+
+  const handleValueSizeChange = (val: number) => {
+    const clamped = Math.max(9, Math.min(20, Math.round(val * 2) / 2));
+    if (linkSizes) {
+      onChangeSettings({ labelFontSize: clamped, valueFontSize: clamped });
+    } else {
+      onChangeSettings({ valueFontSize: clamped });
+    }
   };
 
   const handleDeleteRow = (id: string) => {
@@ -177,6 +234,451 @@ export const BannerShellControls: React.FC<BannerShellControlsProps> = ({
             );
           })}
         </div>
+      </div>
+
+      {/* Font Weight Selection (Labels & Values) */}
+      <div className="bg-gray-900/60 p-4 rounded-xl border border-gray-800 space-y-4">
+        <div className="flex items-center justify-between border-b border-gray-800/80 pb-2.5">
+          <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
+            <SlidersHorizontal size={14} className="text-cyan-400" />
+            System Info Font Weights
+          </div>
+          <span className="text-[11px] font-mono text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/60">
+            L:{settings.labelFontWeight || '500'} • V:{settings.valueFontWeight || '700'}
+          </span>
+        </div>
+
+        {/* Label Font Weight Selection */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-gray-300 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: settings.colors.accent }} />
+              Label Font Weight
+            </span>
+            <span className="text-[11px] text-gray-400 font-mono">
+              {FONT_WEIGHT_OPTIONS.find(w => w.id === (settings.labelFontWeight || '500'))?.name} ({settings.labelFontWeight || '500'})
+            </span>
+          </div>
+          <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
+            {FONT_WEIGHT_OPTIONS.map((weight) => {
+              const isSelected = (settings.labelFontWeight || '500') === weight.id;
+              return (
+                <button
+                  key={`label-weight-${weight.id}`}
+                  type="button"
+                  onClick={() => onChangeSettings({ labelFontWeight: weight.id })}
+                  className={`py-2 px-1 rounded-lg border text-center transition-all flex flex-col items-center justify-center ${
+                    isSelected
+                      ? 'border-cyan-400 bg-cyan-950/50 text-cyan-300 font-bold shadow-sm ring-1 ring-cyan-400/50'
+                      : 'border-gray-800 bg-gray-800/60 text-gray-400 hover:text-gray-200 hover:bg-gray-800'
+                  }`}
+                  title={`${weight.name} (${weight.id})`}
+                >
+                  <span className="text-[11px] font-mono font-semibold">{weight.label}</span>
+                  <span className="text-[9px] truncate w-full mt-0.5 opacity-80">{weight.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Value Font Weight Selection */}
+        <div className="space-y-2 pt-2 border-t border-gray-800/60">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-gray-300 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: settings.colors.valueColor }} />
+              Value Font Weight
+            </span>
+            <span className="text-[11px] text-gray-400 font-mono">
+              {FONT_WEIGHT_OPTIONS.find(w => w.id === (settings.valueFontWeight || '700'))?.name} ({settings.valueFontWeight || '700'})
+            </span>
+          </div>
+          <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
+            {FONT_WEIGHT_OPTIONS.map((weight) => {
+              const isSelected = (settings.valueFontWeight || '700') === weight.id;
+              return (
+                <button
+                  key={`value-weight-${weight.id}`}
+                  type="button"
+                  onClick={() => onChangeSettings({ valueFontWeight: weight.id })}
+                  className={`py-2 px-1 rounded-lg border text-center transition-all flex flex-col items-center justify-center ${
+                    isSelected
+                      ? 'border-emerald-400 bg-emerald-950/50 text-emerald-300 font-bold shadow-sm ring-1 ring-emerald-400/50'
+                      : 'border-gray-800 bg-gray-800/60 text-gray-400 hover:text-gray-200 hover:bg-gray-800'
+                  }`}
+                  title={`${weight.name} (${weight.id})`}
+                >
+                  <span className="text-[11px] font-mono font-semibold">{weight.label}</span>
+                  <span className="text-[9px] truncate w-full mt-0.5 opacity-80">{weight.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Quick Style Presets & Specimen Preview */}
+        <div className="pt-2 border-t border-gray-800/60 space-y-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-1.5">
+            <span className="text-[11px] text-gray-400 font-medium">Quick Weight Pairing Presets:</span>
+            <div className="flex flex-wrap gap-1">
+              {[
+                { name: 'Balanced', labelW: '500', valW: '700' },
+                { name: 'High Contrast', labelW: '300', valW: '800' },
+                { name: 'Uniform Clean', labelW: '400', valW: '600' },
+                { name: 'Minimal Light', labelW: '200', valW: '500' },
+              ].map((pairing) => (
+                <button
+                  key={pairing.name}
+                  type="button"
+                  onClick={() => onChangeSettings({
+                    labelFontWeight: pairing.labelW as FontWeightOption,
+                    valueFontWeight: pairing.valW as FontWeightOption
+                  })}
+                  className="px-2 py-0.5 rounded text-[10px] bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 font-mono transition-colors active:scale-95"
+                >
+                  {pairing.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Live Typography Specimen Box */}
+          <div className="p-3 bg-gray-950 rounded-lg border border-gray-800/80 font-mono text-xs flex items-center justify-between overflow-x-auto">
+            <div className="flex items-center gap-2">
+              <span
+                style={{
+                  color: settings.colors.accent,
+                  fontWeight: Number(settings.labelFontWeight || '500')
+                }}
+              >
+                user.roles
+              </span>
+              <span className="text-gray-600 font-normal">..........</span>
+              <span
+                style={{
+                  color: settings.colors.valueColor,
+                  fontWeight: Number(settings.valueFontWeight || '700')
+                }}
+              >
+                AI Full-Stack Developer &amp; Software Engineer
+              </span>
+            </div>
+            <span className="text-[10px] text-gray-500 font-mono shrink-0 pl-2">
+              Live Sample
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Font Size Selection (Labels & Values) */}
+      <div className="bg-gray-900/60 p-4 rounded-xl border border-gray-800 space-y-4">
+        <div className="flex items-center justify-between border-b border-gray-800/80 pb-2.5">
+          <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
+            <Maximize2 size={14} className="text-cyan-400" />
+            System Info Font Sizes
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setLinkSizes(!linkSizes)}
+              className={`flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono border transition-all ${
+                linkSizes
+                  ? 'bg-cyan-950/80 border-cyan-700 text-cyan-300 shadow-sm'
+                  : 'bg-gray-800/80 border-gray-700 text-gray-400 hover:text-gray-200'
+              }`}
+              title={linkSizes ? 'Linked (both scale together)' : 'Independent sizing'}
+            >
+              <Link2 size={11} className={linkSizes ? 'text-cyan-400' : 'text-gray-500'} />
+              <span>{linkSizes ? 'Locked' : 'Unlinked'}</span>
+            </button>
+            <span className="text-[11px] font-mono text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/60">
+              L:{settings.labelFontSize || 13}px • V:{settings.valueFontSize || 13}px
+            </span>
+          </div>
+        </div>
+
+        {/* Label Font Size */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-gray-300 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: settings.colors.accent }} />
+              Label Font Size
+            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-cyan-300 font-mono font-semibold">
+                {settings.labelFontSize || 13}px
+              </span>
+              <span className="text-[10px] text-gray-500 font-mono">
+                ({settings.colors.accent})
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => handleLabelSizeChange((settings.labelFontSize || 13) - 0.5)}
+              className="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 transition-colors active:scale-95"
+              title="Decrease size by 0.5px"
+            >
+              <Minus size={12} />
+            </button>
+            <input
+              type="range"
+              min="9.5"
+              max="18"
+              step="0.5"
+              value={settings.labelFontSize || 13}
+              onChange={(e) => handleLabelSizeChange(parseFloat(e.target.value))}
+              className="flex-1 accent-cyan-500 h-1.5 bg-gray-800 rounded-lg cursor-pointer"
+            />
+            <button
+              type="button"
+              onClick={() => handleLabelSizeChange((settings.labelFontSize || 13) + 0.5)}
+              className="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 transition-colors active:scale-95"
+              title="Increase size by 0.5px"
+            >
+              <Plus size={12} />
+            </button>
+            <div className="flex items-center bg-gray-950 border border-gray-800 rounded-lg px-2 py-1 w-16 justify-between">
+              <input
+                type="number"
+                min="9"
+                max="20"
+                step="0.5"
+                value={settings.labelFontSize || 13}
+                onChange={(e) => handleLabelSizeChange(parseFloat(e.target.value) || 13)}
+                className="w-8 bg-transparent text-xs text-cyan-300 font-mono focus:outline-none text-right"
+              />
+              <span className="text-[10px] text-gray-500 font-mono">px</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-7 gap-1 pt-0.5">
+            {[10, 11, 12, 13, 14, 15, 16].map((sz) => (
+              <button
+                key={`label-size-${sz}`}
+                type="button"
+                onClick={() => handleLabelSizeChange(sz)}
+                className={`py-1 rounded text-[10px] font-mono font-medium transition-all ${
+                  (settings.labelFontSize || 13) === sz
+                    ? 'bg-cyan-500 text-gray-950 font-bold shadow-sm'
+                    : 'bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700/60'
+                }`}
+              >
+                {sz}px
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Value Font Size */}
+        <div className="space-y-2 pt-2 border-t border-gray-800/60">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-gray-300 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: settings.colors.valueColor }} />
+              Value Font Size
+            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-emerald-300 font-mono font-semibold">
+                {settings.valueFontSize || 13}px
+              </span>
+              <span className="text-[10px] text-gray-500 font-mono">
+                ({settings.colors.valueColor})
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => handleValueSizeChange((settings.valueFontSize || 13) - 0.5)}
+              className="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 transition-colors active:scale-95"
+              title="Decrease size by 0.5px"
+            >
+              <Minus size={12} />
+            </button>
+            <input
+              type="range"
+              min="9.5"
+              max="18"
+              step="0.5"
+              value={settings.valueFontSize || 13}
+              onChange={(e) => handleValueSizeChange(parseFloat(e.target.value))}
+              className="flex-1 accent-emerald-500 h-1.5 bg-gray-800 rounded-lg cursor-pointer"
+            />
+            <button
+              type="button"
+              onClick={() => handleValueSizeChange((settings.valueFontSize || 13) + 0.5)}
+              className="p-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 transition-colors active:scale-95"
+              title="Increase size by 0.5px"
+            >
+              <Plus size={12} />
+            </button>
+            <div className="flex items-center bg-gray-950 border border-gray-800 rounded-lg px-2 py-1 w-16 justify-between">
+              <input
+                type="number"
+                min="9"
+                max="20"
+                step="0.5"
+                value={settings.valueFontSize || 13}
+                onChange={(e) => handleValueSizeChange(parseFloat(e.target.value) || 13)}
+                className="w-8 bg-transparent text-xs text-emerald-300 font-mono focus:outline-none text-right"
+              />
+              <span className="text-[10px] text-gray-500 font-mono">px</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-7 gap-1 pt-0.5">
+            {[10, 11, 12, 13, 14, 15, 16].map((sz) => (
+              <button
+                key={`val-size-${sz}`}
+                type="button"
+                onClick={() => handleValueSizeChange(sz)}
+                className={`py-1 rounded text-[10px] font-mono font-medium transition-all ${
+                  (settings.valueFontSize || 13) === sz
+                    ? 'bg-emerald-500 text-gray-950 font-bold shadow-sm'
+                    : 'bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700/60'
+                }`}
+              >
+                {sz}px
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Quick Size Pairings */}
+        <div className="pt-2 border-t border-gray-800/60 flex flex-wrap items-center justify-between gap-2">
+          <span className="text-[11px] text-gray-400 font-medium">Quick Size Presets:</span>
+          <div className="flex flex-wrap gap-1">
+            {[
+              { name: 'Standard (13/13)', labelS: 13, valS: 13 },
+              { name: 'Emphasis (12/14)', labelS: 12, valS: 14 },
+              { name: 'Compact (11/11)', labelS: 11, valS: 11 },
+              { name: 'Prominent (13.5/15)', labelS: 13.5, valS: 15 },
+              { name: 'Large (14/16)', labelS: 14, valS: 16 },
+            ].map((p) => (
+              <button
+                key={p.name}
+                type="button"
+                onClick={() => onChangeSettings({ labelFontSize: p.labelS, valueFontSize: p.valS })}
+                className="px-2 py-0.5 rounded text-[10px] bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 font-mono transition-colors active:scale-95"
+              >
+                {p.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Live Typography Specimen Box */}
+        <div className="p-3 bg-gray-950 rounded-lg border border-gray-800 font-mono text-xs flex items-center justify-between overflow-x-auto">
+          <div className="flex items-center gap-2">
+            <span
+              style={{
+                color: settings.colors.accent,
+                fontWeight: Number(settings.labelFontWeight || '500'),
+                fontSize: `${settings.labelFontSize || 13}px`
+              }}
+            >
+              user.roles
+            </span>
+            <span className="text-gray-600 font-normal">..........</span>
+            <span
+              style={{
+                color: settings.colors.valueColor,
+                fontWeight: Number(settings.valueFontWeight || '700'),
+                fontSize: `${settings.valueFontSize || 13}px`
+              }}
+            >
+              AI Full-Stack Developer &amp; Software Engineer
+            </span>
+          </div>
+          <span className="text-[10px] text-gray-500 font-mono shrink-0 pl-2">
+            Live Specimen
+          </span>
+        </div>
+      </div>
+
+      {/* SYSTEM.INFO Gmail Badge (Dynamic Width) Section */}
+      <div className="bg-gray-900/60 p-4 rounded-xl border border-gray-800 space-y-3.5">
+        <div className="flex items-center justify-between border-b border-gray-800/80 pb-2.5">
+          <div className="text-xs font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
+            <Mail size={14} className="text-red-400" />
+            Gmail Badge (Under SYSTEM.INFO)
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] font-mono text-red-400 bg-red-950/60 px-2 py-0.5 rounded border border-red-800/60 font-semibold">
+              Pill Width: ~{Math.min(655, Math.max(90, Math.ceil(34 + (settings.email?.trim() || 'developer@github.com').length * (settings.font === 'inter' || settings.font === 'roboto' ? 6.95 : 7.25) + 20)))}px
+            </span>
+          </div>
+        </div>
+
+        {/* Visual Dynamic Width Meter Bar */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-[11px] font-mono text-gray-400">
+            <span className="flex items-center gap-1 text-gray-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+              Dynamic Badge Width Bar
+            </span>
+            <span className="text-cyan-400 font-semibold">
+              {Math.min(655, Math.max(90, Math.ceil(34 + (settings.email?.trim() || 'developer@github.com').length * (settings.font === 'inter' || settings.font === 'roboto' ? 6.95 : 7.25) + 20)))} / 655 px
+            </span>
+          </div>
+          <div className="w-full h-2 bg-gray-950 rounded-full overflow-hidden border border-gray-800/80">
+            <div
+              className="h-full bg-gradient-to-r from-red-500 via-violet-500 to-cyan-400 rounded-full transition-all duration-300"
+              style={{
+                width: `${Math.min(100, Math.max(14, (Math.min(655, Math.max(90, Math.ceil(34 + (settings.email?.trim() || 'developer@github.com').length * (settings.font === 'inter' || settings.font === 'roboto' ? 6.95 : 7.25) + 20))) / 655) * 100))}%`
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Dynamic Email Input with Instant Two-Way Sync */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <label className="text-xs text-gray-300 font-medium">Badge Email / Contact Handle</label>
+            <span className="text-[10px] text-gray-500 font-mono">
+              {(settings.email?.trim() || 'developer@github.com').length} characters
+            </span>
+          </div>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <div className="w-2 h-2 rounded-full bg-red-400" />
+            </div>
+            <input
+              type="text"
+              value={settings.email}
+              onChange={(e) => handleEmailChange(e.target.value)}
+              placeholder="albindavidc.contact@gmail.com"
+              className="w-full bg-gray-950 border border-gray-700 rounded-lg pl-8 pr-3 py-2 text-xs text-white font-mono focus:border-cyan-500 focus:outline-none shadow-inner"
+            />
+          </div>
+        </div>
+
+        {/* Quick Email Presets */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+          <span className="text-[11px] text-gray-400 font-medium">Quick Presets:</span>
+          {[
+            { label: 'Resume', val: 'albindavidc.contact@gmail.com' },
+            { label: 'Short', val: 'albindavidc@gmail.com' },
+            { label: 'Handle', val: '@albindavidc' },
+            { label: 'Portfolio', val: 'contact@albindavidc.com' },
+          ].map((preset) => (
+            <button
+              key={preset.label}
+              type="button"
+              onClick={() => handleEmailChange(preset.val)}
+              className="px-2 py-0.5 rounded text-[10px] bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 font-mono transition-colors active:scale-95"
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+
+        <p className="text-[11px] text-gray-500 leading-relaxed bg-gray-950/40 p-2.5 rounded-lg border border-gray-800/60">
+          The Gmail badge directly below <span className="text-cyan-400 font-mono font-semibold">SYSTEM.INFO</span> measures font metrics in real-time, dynamically scaling its rounded pill container, Google Red mail envelope, and right-anchored pulsing indicator.
+        </p>
       </div>
 
       {/* Animation Toggles */}
@@ -311,14 +813,25 @@ export const BannerShellControls: React.FC<BannerShellControlsProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Email Pill Label</label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="text-xs text-gray-400 flex items-center gap-1.5 font-medium">
+              <Mail size={13} className="text-cyan-400" />
+              Gmail / Contact Badge (Under SYSTEM.INFO)
+            </label>
+            <span className="text-[11px] font-mono text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/60 font-semibold">
+              Dynamic Width: ~{Math.min(655, Math.max(72, 48 + Math.ceil((settings.email?.trim() || 'developer@github.com').length * (settings.font === 'inter' || settings.font === 'roboto' ? 7.1 : 7.35))))}px
+            </span>
+          </div>
           <input
             type="text"
             value={settings.email}
-            onChange={(e) => onChangeSettings({ email: e.target.value })}
+            onChange={(e) => handleEmailChange(e.target.value)}
             placeholder="albindavidc.contact@gmail.com"
             className="w-full bg-gray-800/90 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:border-cyan-500 focus:outline-none"
           />
+          <p className="text-[11px] text-gray-500 mt-1">
+            Badge automatically adapts its width to fit your email or contact text dynamically.
+          </p>
         </div>
 
         <div>

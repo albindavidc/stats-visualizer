@@ -33,6 +33,8 @@ export type BannerFont =
   | 'space-mono'
   | 'roboto';
 
+export type FontWeightOption = '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800';
+
 export interface ThemeColors {
   bg: string;
   cardBg: string;
@@ -63,6 +65,10 @@ export interface BannerShellSettings {
   theme: ThemePreset;
   colors: ThemeColors;
   font: BannerFont;
+  labelFontWeight: FontWeightOption;
+  valueFontWeight: FontWeightOption;
+  labelFontSize: number;
+  valueFontSize: number;
   animatePortrait: boolean;
   animateRows: boolean;
   animateBorder: boolean;

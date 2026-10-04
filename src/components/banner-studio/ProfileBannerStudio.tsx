@@ -74,6 +74,10 @@ export const ProfileBannerStudio: React.FC<ProfileBannerStudioProps> = ({ onBack
     theme: 'cyber-cyan',
     colors: { ...THEME_PRESETS['cyber-cyan'] },
     font: 'monospace',
+    labelFontWeight: '500',
+    valueFontWeight: '700',
+    labelFontSize: 13,
+    valueFontSize: 13,
     animatePortrait: true,
     animateRows: true,
     animateBorder: true
