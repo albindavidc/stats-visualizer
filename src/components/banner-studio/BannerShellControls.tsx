@@ -242,7 +242,7 @@ export const BannerShellControls: React.FC<BannerShellControlsProps> = ({
             type="text"
             value={settings.email}
             onChange={(e) => onChangeSettings({ email: e.target.value })}
-            placeholder="albindavidc007@gmail.com"
+            placeholder="albindavidc.contact@gmail.com"
             className="w-full bg-gray-800/90 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:border-cyan-500 focus:outline-none"
           />
         </div>
@@ -253,7 +253,7 @@ export const BannerShellControls: React.FC<BannerShellControlsProps> = ({
             type="text"
             value={settings.footerCommand}
             onChange={(e) => onChangeSettings({ footerCommand: e.target.value })}
-            placeholder="> system status: ready -- listening on port 8080"
+            placeholder="> More about me &amp; projects below in README ↓"
             className="w-full bg-gray-800/90 border border-gray-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:border-cyan-500 focus:outline-none"
           />
         </div>

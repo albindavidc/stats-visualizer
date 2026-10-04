@@ -65,12 +65,12 @@ export const ProfileBannerStudio: React.FC<ProfileBannerStudioProps> = ({ onBack
 
   // Banner shell settings
   const [shellSettings, setShellSettings] = useState<BannerShellSettings>({
-    title: 'albindavidc@dev - % ./profile.sh --live',
+    title: 'albindavidc.contact@gmail.com - % ./profile.sh --live',
     headerText: 'SYSTEM.INFO',
     showLiveBadge: true,
-    email: 'albindavidc007@gmail.com',
+    email: 'albindavidc.contact@gmail.com',
     username: 'albindavidc',
-    footerCommand: '> system status: ready -- listening on port 8080',
+    footerCommand: '> More about me & projects below in README ↓',
     theme: 'cyber-cyan',
     colors: { ...THEME_PRESETS['cyber-cyan'] },
     animatePortrait: true,
@@ -78,45 +78,60 @@ export const ProfileBannerStudio: React.FC<ProfileBannerStudioProps> = ({ onBack
     animateBorder: true
   });
 
-  // Info rows
+  // Info rows populated with Albin David C's resume data with consistent lowercase dot-notation spelling
   const [infoRows, setInfoRows] = useState<InfoRow[]>([
-    { id: '1', type: 'row', label: 'USER.HANDLE', value: '@albindavidc' },
-    { id: '2', type: 'row', label: 'PRIMARY.ROLE', value: 'Full-Stack Systems Engineer' },
-    { id: '3', type: 'row', label: 'LOCATION.ZONE', value: 'San Francisco, CA [PST]' },
-    { id: '4', type: 'divider', label: '- TECHNICAL ARSENAL', value: '' },
-    { id: '5', type: 'row', label: 'CORE.LANGUAGES', value: 'TypeScript, Rust, Go, Python' },
-    { id: '6', type: 'row', label: 'FRONTEND.STACK', value: 'React, Tailwind, WebGL, Next.js' },
-    { id: '7', type: 'row', label: 'INFRA.SYSTEMS', value: 'Docker, Kubernetes, Vercel, GCP' },
-    { id: '8', type: 'divider', label: '- METRICS & ACTIVITY', value: '' },
-    { id: '9', type: 'row', label: 'TOTAL.COMMITS', value: '1,420+ Contributions' },
-    { id: '10', type: 'row', label: 'REPOS.SHIPPED', value: '38 Open-Source Repositories' },
+    { id: '1', type: 'row', label: 'user.handle', value: '@albindavidc' },
+    { id: '2', type: 'row', label: 'user.roles', value: 'AI Full-Stack Developer & Software Engineer' },
+    { id: '3', type: 'row', label: 'user.location.zone', value: 'Thrissur, Kerala, India [IST]' },
+    { id: '4', type: 'row', label: 'user.education', value: 'B.Tech Mechatronics (2023) • Brototype (2026)' },
+    { id: '5', type: 'row', label: 'user.status', value: 'Experimenting + Learning + Documenting' },
+    { id: '6', type: 'row', label: 'user.toolchain', value: 'VS Code, Antigravity, Docker, Figma, Git, pnpm' },
+    { id: '7', type: 'divider', label: '- CORE TECHNICAL STACK', value: '' },
+    { id: '8', type: 'row', label: 'core.languages', value: 'TypeScript, JavaScript, SQL, HTML5, CSS3' },
+    { id: '9', type: 'row', label: 'core.frontend.stack', value: 'Angular 22, RxJS, NgRx, Tailwind CSS 4, React' },
+    { id: '10', type: 'row', label: 'core.backend.stack', value: 'Node.js, NestJS 11, Express.js, REST APIs, Socket.io' },
+    { id: '11', type: 'row', label: 'core.database', value: 'PostgreSQL, MongoDB, Redis, Prisma, TypeORM' },
+    { id: '12', type: 'row', label: 'core.infra.systems', value: 'AWS S3, Docker, Vercel, GCP, Nginx, PM2' },
+    { id: '13', type: 'divider', label: '- CONTACT & CHANNELS', value: '' },
+    { id: '14', type: 'row', label: 'contact.gmail', value: 'albindavidc.contact@gmail.com' },
+    { id: '15', type: 'row', label: 'contact.portfolio', value: 'albindavidc.com' },
+    { id: '16', type: 'row', label: 'contact.linkedin', value: 'linkedin.com/in/albindavidc' },
+    { id: '17', type: 'row', label: 'contact.github', value: 'github.com/albindavidc' },
   ]);
 
-  // Projects config
+  // Projects config extracted from resume capstones & portfolio
   const [projects, setProjects] = useState<ProjectItem[]>([
     {
       id: 'p1',
-      name: 'Stats Visualizer',
-      repo: 'albindavidc/stats-visualizer',
-      logo: 'logos/stats.png',
-      description: 'Transform your GitHub contribution graph into an animated retro arcade shooter.',
-      tags: ['TypeScript', 'React', 'Canvas']
+      name: 'Nirman AI',
+      repo: 'albindavidc/nirman-ai',
+      logo: 'logos/nirman.png',
+      description: 'Enterprise construction & procurement platform with AI-powered RAG assistance & Gantt scheduling.',
+      tags: ['Angular', 'NestJS', 'PostgreSQL', 'LangChain', 'Docker']
     },
     {
       id: 'p2',
-      name: 'Profile Banner Studio',
-      repo: 'albindavidc/profile-banner-studio',
-      logo: 'logos/banner.png',
-      description: 'Client-side terminal-card SVG banner generator with dithered pixel-art portraits.',
-      tags: ['SVG', 'SMIL', 'Dithering']
+      name: 'Unbound E-Commerce',
+      repo: 'albindavidc/unbound-ecommerce',
+      logo: 'logos/unbound.png',
+      description: 'Customizable e-commerce platform with interactive canvas product designer & Razorpay.',
+      tags: ['Node.js', 'Express', 'MongoDB', 'Tailwind', 'GCP']
     },
     {
       id: 'p3',
-      name: 'HyperFlux Cache',
-      repo: 'albindavidc/hyperflux-cache',
-      logo: 'logos/flux.png',
-      description: 'Globally replicated read-optimized edge cache layer with sub-millisecond lookups.',
-      tags: ['Go', 'EdgeConfig', 'Redis']
+      name: 'Vidya AI',
+      repo: 'albindavidc/vidya-ai',
+      logo: 'logos/vidya.png',
+      description: 'AI-driven educational platform designed around structured content authoring & role workflows.',
+      tags: ['Angular', 'TypeScript', 'TypeORM', 'Google GenAI']
+    },
+    {
+      id: 'p4',
+      name: 'Nexus AI',
+      repo: 'albindavidc/nexus-ai',
+      logo: 'logos/nexus.png',
+      description: 'Real-time fitness community platform combining social interaction with personalized AI coaching.',
+      tags: ['Angular', 'Express', 'Socket.io', 'AWS S3']
     }
   ]);
 

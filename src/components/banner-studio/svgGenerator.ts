@@ -108,15 +108,21 @@ export function generateBannerSvg(
     }).join('');
   }
 
-  // Generate Info Rows SVG
-  let currentY = 205;
+  // Generate Info Rows SVG with dynamic spacing to fit row counts cleanly
   const rightColumnX = 460;
   const rightColumnWidth = 655;
+  const totalRows = infoRows.length;
+  const availHeight = 346;
+  const stepY = totalRows > 0 ? Math.min(36, Math.max(19, Math.floor(availHeight / totalRows))) : 34;
+  const fontSize = totalRows > 13 ? (totalRows > 16 ? 11 : 12) : 13.5;
+  const dividerFontSize = totalRows > 13 ? 10.5 : 12;
+  const targetChars = totalRows > 13 ? 82 : 75;
+  let currentY = 188 + Math.max(0, Math.floor((availHeight - totalRows * stepY) / 4));
 
   const infoRowsSvg = infoRows.map((row, index) => {
-    const delay = (0.25 + index * 0.12).toFixed(2);
+    const delay = (0.25 + index * 0.08).toFixed(2);
     const rowY = currentY;
-    currentY += row.type === 'divider' ? 32 : 36;
+    currentY += stepY;
 
     if (row.type === 'divider') {
       let dividerAnim = '';
@@ -134,17 +140,15 @@ export function generateBannerSvg(
       return `
       <g opacity="${initialOpacity}" ${initialTransform}>
         ${dividerAnim}
-        <text x="${rightColumnX}" y="${rowY}" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="12" font-weight="700" fill="${colors.secondaryAccent}" letter-spacing="1.5">
+        <text x="${rightColumnX}" y="${rowY}" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="${dividerFontSize}" font-weight="700" fill="${colors.secondaryAccent}" letter-spacing="1.5">
           ${escapeXml(row.label.toUpperCase())}
         </text>
-        <line x1="${rightColumnX + Math.max(80, row.label.length * 10)}" y1="${rowY - 4}" x2="${rightColumnX + rightColumnWidth}" y2="${rowY - 4}" stroke="${colors.leaderColor}" stroke-width="1" stroke-dasharray="4 4" opacity="0.6"/>
+        <line x1="${rightColumnX + Math.max(80, row.label.length * 8.5)}" y1="${rowY - 4}" x2="${rightColumnX + rightColumnWidth}" y2="${rowY - 4}" stroke="${colors.leaderColor}" stroke-width="1" stroke-dasharray="4 4" opacity="0.6"/>
       </g>`;
     }
 
     // Normal info row
     // Dotted leader computed automatically from label/value length
-    // Total monospaced character capacity across 655px is ~78 characters
-    const targetChars = 75;
     const labelLen = row.label.length;
     const valLen = row.value.length;
     const dotsCount = Math.max(3, targetChars - labelLen - valLen - 2);
@@ -165,7 +169,7 @@ export function generateBannerSvg(
     return `
       <g opacity="${initialOpacity}" ${initialTransform}>
         ${rowAnim}
-        <text x="${rightColumnX}" y="${rowY}" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="13.5" textLength="${rightColumnWidth}" lengthAdjust="spacingAndGlyphs">
+        <text x="${rightColumnX}" y="${rowY}" font-family="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" font-size="${fontSize}" textLength="${rightColumnWidth}" lengthAdjust="spacingAndGlyphs">
           <tspan fill="${colors.accent}">${escapeXml(row.label)}</tspan>
           <tspan fill="${colors.leaderColor}">${dottedLeader}</tspan>
           <tspan fill="${colors.valueColor}" font-weight="bold">${escapeXml(row.value)}</tspan>
@@ -219,8 +223,8 @@ export function generateBannerSvg(
   const windowTitle = shellSettings.title || `${shellSettings.email || 'developer'} - % ./profile.sh --live`;
 
   // Cursor position calculated from footer command length
-  const footerText = shellSettings.footerCommand || `> system status: ready -- listening on port 8080`;
-  const cursorX = rightColumnX + Math.min(620, footerText.length * 8.4 + 10);
+  const footerText = shellSettings.footerCommand || `> More about me & projects below in README ↓`;
+  const cursorX = rightColumnX + Math.min(630, footerText.length * 8.2 + 8);
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1180" height="610" viewBox="0 0 1180 610">
